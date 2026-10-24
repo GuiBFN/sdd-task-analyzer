@@ -15,8 +15,8 @@ Bootcamp III — projeto cumulativo (Fase 1: especificação · Fase 2: implemen
 |---|---|
 | Versão | 1.1 |
 | Status | Vigente — base da implementação da Fase 2 |
-| Autor | [PREENCHER — nome completo do estudante] |
-| Data | [PREENCHER] |
+| Autor | Guilherme Borges Furtado Neves |
+| Data | 23/10/2026 |
 | Substitui | Versão 1.0, entregue na Fase 1 |
 
 ### Histórico de versões
