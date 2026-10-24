@@ -1,0 +1,166 @@
+# Versao legivel por maquina do contrato em specs/task_analyzer_spec.md (v1.1).
+# A fonte da verdade editavel continua sendo o arquivo .md.
+modulo: TaskAnalyzer
+versao_contrato: "1.1"
+linguagem:
+  nome: python
+  versao_minima: "3.11"
+
+interface_publica:
+  funcao: analyze_tasks
+  assinatura: "analyze_tasks(tarefas: list[dict[str, Any]]) -> dict[str, Any]"
+  excecao: TaskValidationError
+  exports: [analyze_tasks, TaskValidationError]
+
+entradas:
+  tipo: list[dict]
+  observacoes:
+    - "A lista pode ser vazia; e entrada valida (RN-05)."
+    - "Datas sem fuso sao interpretadas como UTC; datas com outro fuso sao convertidas (RN-06)."
+  campos:
+    - nome: id_tarefa
+      tipo: int
+      obrigatorio: true
+      restricoes: ["maior que zero", "unico na lista", "booleano rejeitado"]
+    - nome: data_criacao
+      tipo: datetime
+      obrigatorio: true
+      restricoes: ["UTC"]
+    - nome: data_inicio
+      tipo: datetime
+      obrigatorio: false
+      restricoes: ["UTC", "None quando nao iniciada"]
+    - nome: data_conclusao
+      tipo: datetime
+      obrigatorio: false
+      restricoes: ["UTC", "None quando nao concluida"]
+    - nome: prazo
+      tipo: datetime
+      obrigatorio: true
+      restricoes: ["UTC"]
+    - nome: prioridade
+      tipo: str
+      obrigatorio: true
+      valores: [baixa, media, alta]
+      restricoes: ["sem acento"]
+    - nome: status
+      tipo: str
+      obrigatorio: true
+      valores: [concluida, pendente, cancelada]
+      restricoes: ["sem acento"]
+
+saidas:
+  observacao: "Exatamente estas chaves; nenhuma metrica adicional."
+  chaves:
+    - nome: total_tarefas
+      tipo: int
+      descricao: "Total de tarefas recebidas no recorte, independentemente do status."
+    - nome: total_concluidas
+      tipo: int
+      descricao: "Tarefas com status = concluida e data_conclusao informada."
+    - nome: total_pendentes
+      tipo: int
+      descricao: "Tarefas com status = pendente."
+    - nome: tempo_medio_conclusao_horas
+      tipo: float
+      descricao: "Tempo medio entre criacao e conclusao, em horas."
+    - nome: taxa_atraso_percentual
+      tipo: float
+      descricao: "Percentual de concluidas entregues apos o prazo."
+    - nome: indicadores_por_prioridade
+      tipo: dict
+      descricao: "As cinco metricas acima, recalculadas para cada prioridade (baixa, media, alta)."
+
+regras_negocio:
+  - id: RN-01
+    regra: "So entram no calculo de tempo e atraso as tarefas com status = concluida e data_conclusao informada."
+  - id: RN-02
+    regra: "Tempo de conclusao = data_conclusao - data_criacao, expresso em horas."
+  - id: RN-03
+    regra: "Tarefa em atraso quando data_conclusao > prazo. Conclusao exatamente no prazo nao e atraso."
+  - id: RN-04
+    regra: "Datas fora de ordem cronologica (criacao -> inicio -> conclusao) disparam TaskValidationError."
+  - id: RN-05
+    regra: "Sem tarefas concluidas no recorte, tempo_medio_conclusao_horas e taxa_atraso_percentual valem 0.0. Nenhuma excecao e lancada, e nenhuma divisao por zero ocorre."
+  - id: RN-06
+    regra: "Fuso horario sempre UTC. Datas naive sao assumidas como UTC; datas com outro fuso sao convertidas."
+  - id: RN-07
+    regra: "Arredondamento de duas casas decimais para tempos e percentuais."
+  - id: RN-08
+    regra: "total_tarefas conta todas as tarefas do recorte, inclusive pendentes e canceladas."
+  - id: RN-09
+    regra: "As metricas por prioridade usam exatamente as mesmas regras, aplicadas ao subconjunto."
+  - id: RN-10
+    regra: "As tres prioridades aparecem sempre em indicadores_por_prioridade, zeradas quando vazias."
+  - id: RN-11
+    regra: "O modulo e puro e deterministico: nao persiste dados, nao acessa rede, nao le o relogio do sistema e nao altera a lista recebida."
+
+excecoes:
+  classe: TaskValidationError
+  validacao: eager
+  observacao: "Unica excecao lancada ao chamador. O primeiro registro invalido interrompe a analise; lote invalido nao produz resultado parcial."
+  causas:
+    - causa: "Entrada nao e lista"
+      mensagem: "Entrada inválida — esperado list, recebido <tipo>"
+    - causa: "Registro nao e dicionario"
+      mensagem: "Registro inválido — esperado dict, recebido <tipo>"
+    - causa: "id_tarefa ausente"
+      mensagem: "Tarefa sem identificador: id_tarefa inválido — campo obrigatório ausente"
+    - causa: "id_tarefa nao inteiro, menor ou igual a zero, ou duplicado"
+      mensagem: "Tarefa <id>: id_tarefa inválido — <motivo>"
+    - causa: "Campo obrigatorio ausente ou de tipo incorreto"
+      mensagem: "Tarefa <id>: <campo> inválido — <motivo>"
+    - causa: "Enum fora do dominio"
+      mensagem: "Tarefa <id>: <campo> inválido — valor '<v>' fora do domínio [...]"
+    - causa: "data_conclusao anterior a data_criacao"
+      mensagem: "Tarefa <id>: data_conclusao inválida — conclusão anterior à criação"
+    - causa: "data_inicio anterior a data_criacao"
+      mensagem: "Tarefa <id>: data_inicio inválida — início anterior à criação"
+    - causa: "data_conclusao anterior a data_inicio"
+      mensagem: "Tarefa <id>: data_conclusao inválida — conclusão anterior ao início"
+
+cenarios_aceite:
+  - id: 1
+    nome: Sucesso
+    dado: "Conjunto de tarefas validas com diferentes prioridades, prazos e status."
+    entao: "As metricas retornadas estao corretas, no geral e por prioridade."
+    massa_de_teste:
+      observacao: "Todas as datas em UTC, marco de 2026; horarios no formato dia HH:MM."
+      tarefas:
+        - {id: 1, prioridade: alta, status: concluida, criacao: "01 08:00", conclusao: "01 10:00", prazo: "01 12:00", tempo_horas: 2, atraso: false}
+        - {id: 2, prioridade: alta, status: concluida, criacao: "01 08:00", conclusao: "01 14:00", prazo: "01 12:00", tempo_horas: 6, atraso: true}
+        - {id: 3, prioridade: media, status: concluida, criacao: "01 08:00", conclusao: "01 09:00", prazo: "01 10:00", tempo_horas: 1, atraso: false}
+        - {id: 4, prioridade: baixa, status: pendente, criacao: "01 08:00", conclusao: null, prazo: "02 12:00"}
+        - {id: 5, prioridade: baixa, status: cancelada, criacao: "01 08:00", conclusao: null, prazo: "02 12:00"}
+    resultado_esperado:
+      geral: {total_tarefas: 5, total_concluidas: 3, total_pendentes: 1, tempo_medio_conclusao_horas: 3.0, taxa_atraso_percentual: 33.33}
+      alta: {total_tarefas: 2, total_concluidas: 2, total_pendentes: 0, tempo_medio_conclusao_horas: 4.0, taxa_atraso_percentual: 50.0}
+      media: {total_tarefas: 1, total_concluidas: 1, total_pendentes: 0, tempo_medio_conclusao_horas: 1.0, taxa_atraso_percentual: 0.0}
+      baixa: {total_tarefas: 2, total_concluidas: 0, total_pendentes: 1, tempo_medio_conclusao_horas: 0.0, taxa_atraso_percentual: 0.0}
+  - id: 2
+    nome: Excecao
+    dado: "Entrada com datas inconsistentes ou registro malformado."
+    entao: "Dispara TaskValidationError com mensagem clara e objetiva."
+    casos:
+      - {caso: "2.a", entrada: "data_conclusao < data_criacao"}
+      - {caso: "2.b", entrada: "data_inicio < data_criacao"}
+      - {caso: "2.c", entrada: "data_conclusao < data_inicio"}
+      - {caso: "2.d", entrada: "prioridade = 'urgente'"}
+      - {caso: "2.e", entrada: "status = 'finalizada'"}
+      - {caso: "2.f", entrada: "id_tarefa zero, negativo, booleano ou nao inteiro"}
+      - {caso: "2.g", entrada: "id_tarefa ausente ou duplicado"}
+      - {caso: "2.h", entrada: "campo obrigatorio ausente ou com tipo errado"}
+      - {caso: "2.i", entrada: "entrada nao e lista, ou registro nao e dicionario"}
+  - id: 3
+    nome: Casos de borda
+    dado: "Entrada vazia ou sem tarefas concluidas."
+    entao: "Medias e percentuais valem 0.0, sem excecao."
+    casos:
+      - {caso: "3.a", entrada: "lista vazia", esperado: "todas as metricas em zero, tres prioridades presentes"}
+      - {caso: "3.b", entrada: "apenas pendentes", esperado: "total_pendentes correto, medias 0.0"}
+      - {caso: "3.c", entrada: "apenas canceladas", esperado: "total_tarefas correto, medias 0.0"}
+      - {caso: "3.d", entrada: "conclusao exatamente no prazo", esperado: "taxa_atraso_percentual = 0.0"}
+      - {caso: "3.e", entrada: "conclusao um segundo apos o prazo", esperado: "taxa_atraso_percentual = 100.0"}
+      - {caso: "3.f", entrada: "concluida sem data_conclusao", esperado: "nao entra no calculo; medias 0.0"}
+      - {caso: "3.g", entrada: "datas naive ou em outro fuso", esperado: "normalizadas para UTC antes do calculo"}
+      - {caso: "3.h", entrada: "lista passada duas vezes", esperado: "entrada inalterada; resultados identicos"}
