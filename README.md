@@ -170,7 +170,7 @@ Branches do projeto:
 
 ## Autoria e governança
 
-Especificação, regras de contexto, revisão crítica e homologação: **[PREENCHER — nome completo]**.
+Especificação, regras de contexto, revisão crítica e homologação: **Guilherme Borges Furtado Neves**.
 Geração de código: assistente de IA, sob as regras de `CONTEXT_RULES.md`.
 
 A decisão final e a responsabilidade técnica são humanas. Nenhum código entra neste repositório sem
