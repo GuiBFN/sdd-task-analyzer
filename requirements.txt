@@ -1,0 +1,5 @@
+# Dependências autorizadas do projeto.
+# A lógica de produção em src/ usa APENAS a biblioteca padrão do Python (PR-01).
+# As dependências abaixo existem exclusivamente para o Test Harness em tests/.
+pytest>=8.0
+pytest-cov>=5.0
