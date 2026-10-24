@@ -1,0 +1,6 @@
+services:
+  testes:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: sdd-task-analyzer

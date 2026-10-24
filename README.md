@@ -4,6 +4,7 @@ Módulo **TaskAnalyzer** — análise de tarefas e métricas de produtividade, c
 paradigma **SDD (Spec-Driven Development)**: a especificação técnica é o contrato, o assistente de
 IA é a executora e o desenvolvedor é o arquiteto e o homologador.
 
+[![CI](https://github.com/GuiBFN/sdd-task-analyzer/actions/workflows/ci.yml/badge.svg)](https://github.com/GuiBFN/sdd-task-analyzer/actions/workflows/ci.yml)
 ![testes](https://img.shields.io/badge/pytest-41%20passed-brightgreen)
 ![cobertura](https://img.shields.io/badge/cobertura-100%25-brightgreen)
 ![python](https://img.shields.io/badge/python-3.11%2B-blue)
@@ -37,13 +38,21 @@ que não está especificado é comportamento proibido.
 
 ```
 sdd-task-analyzer/
+├── .github/
+│   └── workflows/
+│       └── ci.yml             # Integração contínua (GitHub Actions)
 ├── README.md                  # Este arquivo
 ├── CONTEXT_RULES.md           # Regras de governança fornecidas ao assistente de IA
+├── Dockerfile                 # Imagem python:3.11-slim, pytest como CMD
+├── docker-compose.yml         # Execução da suíte isolada em um comando
+├── .dockerignore
 ├── .gitignore
 ├── pytest.ini                 # Configuração do pytest (pythonpath e testpaths)
 ├── requirements.txt           # Dependências autorizadas
 ├── specs/
-│   └── task_analyzer_spec.md  # Especificação SDD v1.1 — fonte da verdade
+│   ├── task_analyzer_spec.md  # Especificação SDD v1.1 — fonte da verdade
+│   ├── requirements.yaml      # Contrato v1.1 em formato legível por máquina
+│   └── system_design_document.pdf  # Contrato v1.1 em PDF
 ├── tests/
 │   └── test_harness.py        # Test Harness (pytest)
 └── src/
@@ -75,6 +84,27 @@ Para rodar com relatório de cobertura:
 ```bash
 pytest --cov=src --cov-report=term-missing
 ```
+
+### Execução via Docker
+
+Reprodutibilidade idêntica em qualquer máquina, sem depender do Python local.
+Requer Docker com o plugin Compose.
+
+```bash
+# Build da imagem
+docker build -t sdd-task-analyzer .
+
+# Executa a suíte (pytest é o CMD da imagem)
+docker run --rm sdd-task-analyzer
+
+# Ou, com Compose
+docker compose run --rm testes
+```
+
+### Integração contínua
+
+O workflow `.github/workflows/ci.yml` roda em `ubuntu-latest` com Python 3.11 a cada push
+ou pull request em `main` e `develop`, executando `pytest tests/test_harness.py -v`.
 
 ### Status do build
 
@@ -155,6 +185,8 @@ Branches do projeto:
 - `feature/sdd-specification` — especificação e regras de contexto
 - `feature/test-harness` — suíte de testes
 - `feature/task-analyzer-impl` — implementação
+- `feature/devops-ci-docker` — CI, Docker e artefatos de especificação da Fase 3
+- `develop` — branch de integração (gatilho do CI)
 
 ---
 
@@ -164,7 +196,9 @@ Branches do projeto:
 |---|---|---|
 | 1 | Especificação executável, cenários de aceite, CONTEXT_RULES, desenho do repositório | Concluída |
 | 2 | Geração de código via IA, Test Harness, versionamento e Pull Requests | Concluída |
-| 3 | CI/CD com GitHub Actions, Docker, relatório de governança e ética | Próxima |
+| 3 | CI/CD com GitHub Actions | Concluída |
+| 3 | Containerização com Docker | Concluída |
+| 3 | Relatório de governança e ética, pitch em vídeo | Próxima |
 
 ---
 
