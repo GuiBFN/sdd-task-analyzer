@@ -57,7 +57,7 @@ sdd-task-analyzer/
 Requer **Python 3.11 ou superior**.
 
 ```bash
-git clone https://github.com/<SEU-USUARIO>/sdd-task-analyzer.git
+git clone https://github.com/GuiBFN/sdd-task-analyzer.git
 cd sdd-task-analyzer
 
 python -m venv .venv
