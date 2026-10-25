@@ -8,6 +8,10 @@ IA é a executora e o desenvolvedor é o arquiteto e o homologador.
 ![testes](https://img.shields.io/badge/pytest-41%20passed-brightgreen)
 ![cobertura](https://img.shields.io/badge/cobertura-100%25-brightgreen)
 ![python](https://img.shields.io/badge/python-3.11%2B-blue)
+[![pitch](https://img.shields.io/badge/pitch%20t%C3%A9cnico-YouTube-red)](https://youtu.be/m20uA381wXs)
+
+**Pitch técnico (5 min):** https://youtu.be/m20uA381wXs — demonstra o pipeline de CI,
+a execução em contêiner e a governança aplicada ao código gerado por IA.
 
 ---
 
@@ -196,9 +200,7 @@ Branches do projeto:
 |---|---|---|
 | 1 | Especificação executável, cenários de aceite, CONTEXT_RULES, desenho do repositório | Concluída |
 | 2 | Geração de código via IA, Test Harness, versionamento e Pull Requests | Concluída |
-| 3 | CI/CD com GitHub Actions | Concluída |
-| 3 | Containerização com Docker | Concluída |
-| 3 | Relatório de governança e ética, pitch em vídeo | Próxima |
+| 3 | CI/CD com GitHub Actions, Docker, relatório de governança e pitch técnico | Concluída |
 
 ---
 
